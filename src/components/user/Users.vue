@@ -1,10 +1,6 @@
 <template>
   <div>
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-    </el-breadcrumb>
+    <breadcrumb title1="用户管理" title2="用户列表"></breadcrumb>
 
     <el-card class="box-card">
       <el-row :gutter="20">
@@ -68,6 +64,7 @@
                 size="mini"
                 type="warning"
                 icon="el-icon-setting"
+                @click="setRole(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -139,6 +136,33 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="editDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="editUser">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog
+      title="分配角色"
+      :visible.sync="setRoleDialogVisible"
+      width="50%"
+      @close="setRoleClosed"
+    >
+      <div>
+        <h3>当前用户名: {{ userInfo.username }}</h3>
+        <h3>当前角色名: {{ userInfo.role_name }}</h3>
+        <h3>
+          分配新角色:
+          <el-select v-model="selectedRoleId" placeholder="请选择">
+            <el-option
+              v-for="item in rolesList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </h3>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -222,6 +246,10 @@ export default {
           { validator: checkMobile, trigger: "blur" },
         ],
       },
+      setRoleDialogVisible: false,
+      userInfo: {},
+      rolesList: [],
+      selectedRoleId: "",
     };
   },
   created() {
@@ -318,9 +346,39 @@ export default {
       this.$message.success("删除成功!");
       this.getUserList();
     },
+
+    async setRole(userinfo) {
+      this.userInfo = userinfo;
+
+      const { data: res } = await this.$http.get("roles");
+      if (res.meta.status !== 200) return this.$message.error("获取列表失败!");
+      this.rolesList = res.data;
+
+      this.setRoleDialogVisible = true;
+    },
+
+    async saveRoleInfo() {
+      const { data: res } = await this.$http.put(
+        `users/${this.userInfo.id}/role`,
+        {
+          rid: this.selectedRoleId,
+        }
+      );
+      if (res.meta.status !== 200) return this.$message.error("分配失败!");
+      this.$message.success("分配成功!");
+      this.getUserList();
+      this.setRoleDialogVisible = false;
+    },
+
+    setRoleClosed() {
+      this.selectedRoleId = "";
+    },
   },
 };
 </script>
 
 <style lang="less" scoped>
+.el-pagination {
+  margin-top: 30px;
+}
 </style>
