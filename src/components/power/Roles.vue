@@ -5,7 +5,9 @@
     <el-card class="box-card">
       <el-row>
         <el-col>
-          <el-button type="primary">添加角色</el-button>
+          <el-button type="primary" @click="showAddRoleDialog"
+            >添加角色</el-button
+          >
         </el-col>
       </el-row>
 
@@ -86,7 +88,7 @@
       </el-table>
     </el-card>
 
-    <el-dialog title="修改角色" :visible.sync="editDialogVisible" width="50%">
+    <el-dialog title="修改角色" :visible.sync="editDialogVisible" width="40%">
       <el-form
         :model="editRoleForm"
         ref="editRoleRef"
@@ -128,6 +130,31 @@
         <el-button type="primary" @click="allotRights">确 定</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog
+      title="添加角色"
+      :visible.sync="addRoleDialogVisible"
+      width="50%"
+      @close="addRoleDialogClosed"
+    >
+      <el-form
+        :model="addRoleForm"
+        ref="addRoleFormRef"
+        :rules="editRoleRules"
+        label-width="90px"
+      >
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model.trim="addRoleForm.roleName"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model.trim="addRoleForm.roleDesc"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addRoleDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addRole">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -153,12 +180,19 @@ export default {
       },
       setRightDialogVisible: false,
       rightsList: [],
+
       treeProps: {
         children: "children",
         label: "authName",
       },
       defKeys: [],
       nowId: 0,
+
+      addRoleDialogVisible: false,
+      addRoleForm: {
+        roleName: "",
+        roleDesc: "",
+      },
     };
   },
 
@@ -267,6 +301,28 @@ export default {
       this.$message.success("更新成功!");
       this.getRolesList();
       this.setRightDialogVisible = false;
+    },
+
+    showAddRoleDialog() {
+      this.addRoleDialogVisible = true;
+    },
+
+    addRoleDialogClosed() {
+      this.$refs.addRoleFormRef.resetFields();
+    },
+
+    addRole() {
+      this.$refs.addRoleFormRef.validate(async (valid) => {
+        if (!valid) return;
+        const { data: res } = await this.$http.post("roles", {
+          ...this.addRoleForm,
+        });
+        if (res.meta.status !== 201)
+          return this.$message.error("创建角色失败!");
+        this.$message.success("创建角色成功!");
+        this.getRolesList();
+        this.addRoleDialogVisible = false;
+      });
     },
   },
 };

@@ -5,7 +5,7 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  min-width: 1040px;
+  min-width: 1080px;
 }
 .el-breadcrumb {
   margin-bottom: 20px;
@@ -16,4 +16,7 @@ body,
 }
 .el-table {
   margin-top: 15px;
+}
+.el-cascader-menu {
+  height: 300px;
 }
