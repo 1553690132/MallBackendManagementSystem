@@ -134,7 +134,7 @@ export default {
 
     .btns {
       display: flex;
-      justify-content: end;
+      justify-content: flex-end;
     }
   }
 }
